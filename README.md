@@ -1,2 +1,2 @@
 # genetic-algorithms.
-conceitos de computação evolucionaria implementados na resolução de diversos problemas conhecidos
+trabalhos realizados para disciplina de computação evolucionaria usando algoritimos geneticos para solução de varios problemas conhecidos.
