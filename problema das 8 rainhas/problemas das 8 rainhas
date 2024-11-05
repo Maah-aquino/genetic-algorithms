@@ -1,1 +1,101 @@
+import random
+import time
+
+def fitness(gene):
+    score = 0
+    maxfit = 28
+    length = len(gene)
+    for i in range(length):
+        for j in range(length):
+            if abs(gene[i] - gene[j]) == abs(i - j) or gene[i] == gene[j]:
+                score += 1
+    return (maxfit - score)
+
+def roulette_wheel_selection(population, fitnesses):
+    total_fitness = sum(fitnesses)
+    selection_probs = []
+    for f in fitnesses:
+        selection_prob = f / total_fitness
+        selection_probs.append(selection_prob)
+    
+    # Geração de um número aleatório entre 0 e 1
+    rand = random.random()
+    cumulative_prob = 0.0
+    
+    for i, prob in enumerate(selection_probs):
+        cumulative_prob += prob
+        if rand < cumulative_prob:
+            return population[i]
+
+# Função de crossover
+def crossover(parent1, parent2):
+    point = random.randint(1, len(parent1) - 1)
+    child1 = list(parent1[:point]) + list(parent2[point:])
+    child2 = list(parent2[:point]) + list(parent1[point:])
+    return child1, child2
+
+# Função de mutação
+def mutate(individual, mutation_rate):
+    original_individual = individual[:]  # Armazena uma cópia do indivíduo antes da mutação
+    mutated = False  # Variável para rastrear se houve mutação
+
+    for i in range(len(individual)):
+        if random.random() < mutation_rate:
+            individual[i] = random.randint(1, 8)
+            mutated = True
+
+    mutated_individual = individual
+
+    #if mutated:
+    #    print(f"\nMutação ocorreu! Indivíduo antes: {original_individual}, Indivíduo depois: {mutated_individual}")
+    return mutated_individual
+
+# Algoritmo evolucionário
+def evolutiveAlgorithm(population, population_size, mutationRate, max_generations):
+    for generation in range(max_generations):
+        new_population = []
+
+        while len(new_population) < population_size:
+            # Seleção de pais usando roleta
+            fitnesses = [fitness(ind) for ind in population]
+            parent1 = roulette_wheel_selection(population, fitnesses)
+            parent2 = roulette_wheel_selection(population, fitnesses)
+
+            # Crossover
+            child1, child2 = crossover(parent1, parent2)
+
+            # Mutação
+            child1 = mutate(child1, mutationRate)
+            child2 = mutate(child2, mutationRate)
+
+            # Adicionar filhos à nova população
+            new_population.extend([child1, child2])
+
+        # Avaliação e seleção da nova geração
+        population = sorted(new_population, key=lambda x: fitness(x), reverse=True)[:population_size]
+
+        # Imprimir a população em cada geração
+        #print(f"\nPopulação na geração {generation + 1}:")
+        #for individual in population:
+        #    print(f"Indivíduo: {individual}, Aptidão (fitness): {fitness(individual)}")
+
+    # Melhor indivíduo encontrado
+    best_individual = population[0]
+    return best_individual
+
+# Inicialização da população com  indivíduos aleatórios
+population_size = 120
+population = [random.choices(range(1, 9), k=8) for _ in range(population_size)]
+mutationRate = 0.05
+
+# Critério de término (número máximo de gerações)
+max_generations = 100
+start = time.time()
+best_individual = evolutiveAlgorithm(population, population_size, mutationRate, max_generations)
+stop = time.time()
+
+print(f"\nGerações: {max_generations}")
+print(f"Tempo de execução em segundos: {stop - start}")
+print(f"Aptidão (fitness) do melhor valor: {fitness(best_individual)}")
+print(f"Melhor indivíduo (genótipo): {best_individual}")
 
