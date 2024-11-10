@@ -6,11 +6,20 @@ def fitness(gene):
     maxfit = 28
     length = len(gene)
     for i in range(length):
-        for j in range(length):
+        for j in range(i+1,
+                       length):
             if abs(gene[i] - gene[j]) == abs(i - j) or gene[i] == gene[j]:
                 score += 1
     return (maxfit - score)
 
+    # Função de seleção por torneio 
+def tournament_selection(p1, p2): 
+        p1Fit = fitness(p1) 
+        p2Fit = fitness(p2) 
+        if p1Fit > p2Fit: 
+            return p1 
+        else: return p2
+# função de seleção por roleta
 def roulette_wheel_selection(population, fitnesses):
     total_fitness = sum(fitnesses)
     selection_probs = []
@@ -26,7 +35,18 @@ def roulette_wheel_selection(population, fitnesses):
         cumulative_prob += prob
         if rand < cumulative_prob:
             return population[i]
+# Função principal de seleção que permite escolher o método 
+def select_individual(population, fitnesses, selection_method="tournament"): 
+    if selection_method == "tournament": 
+        p1 = random.choice(population) 
+        p2 = random.choice(population) 
+        return tournament_selection(p1, p2) 
 
+    elif selection_method == "roulette":
+        return roulette_wheel_selection(population, fitnesses) 
+    
+    else: 
+        raise ValueError("Método de seleção desconhecido: " + selection_method)
 # Função de crossover
 def crossover(parent1, parent2):
     point = random.randint(1, len(parent1) - 1)
@@ -51,15 +71,16 @@ def mutate(individual, mutation_rate):
     return mutated_individual
 
 # Algoritmo evolucionário
-def evolutiveAlgorithm(population, population_size, mutationRate, max_generations):
+def evolutiveAlgorithm(population, population_size, mutationRate, max_generations, selection_method="tournament"):
     for generation in range(max_generations):
         new_population = []
 
         while len(new_population) < population_size:
             # Seleção de pais usando roleta
-            fitnesses = [fitness(ind) for ind in population]
-            parent1 = roulette_wheel_selection(population, fitnesses)
-            parent2 = roulette_wheel_selection(population, fitnesses)
+            # Seleção de pais 
+            fitnesses = [fitness(ind) for ind in population] 
+            parent1 = select_individual(population, fitnesses, selection_method) 
+            parent2 = select_individual(population, fitnesses, selection_method)
 
             # Crossover
             child1, child2 = crossover(parent1, parent2)
@@ -98,4 +119,3 @@ print(f"\nGerações: {max_generations}")
 print(f"Tempo de execução em segundos: {stop - start}")
 print(f"Aptidão (fitness) do melhor valor: {fitness(best_individual)}")
 print(f"Melhor indivíduo (genótipo): {best_individual}")
-
